@@ -4,8 +4,6 @@
 
 在刚刚结束的挑战赛初赛环节中，我们尝试实现了一个高性能的 Service Mesh Agent。在这样一个简化场景中，整个系统共涉及到 5 个服务，分别是：1 个 Consumer，3 个 Provider 和 1 个 etcd。而如果把 Agent 也算在内的话，系统中共有 9 个程序在运行。设想在天猫或淘宝这样庞大的分布式系统中，所运行的程序将会不计其数。如何在如此大规模的集群中对服务请求的调用过程进行跟踪，以及如何从生成的海量数据日志里发现那些异常的调用链，是本题目将要讨论和处理的问题。
 
-### 1.1、分布式系统跟踪体系
-
 分布式调用跟踪体系源自 Google 的一篇[论文](https://ai.google/research/pubs/pub36356)，其核心思想是在请求发起的时候为该请求分配一个 ID，此 ID 会贯穿请求流经的每一个应用及方法调用。跟踪系统以这个 ID 为线索记录下每个调用过程的起止时间、耗时、方法名称、参数和返回值等等。这些数据经过加工处理以后，就可以展现为跨越多个系统的调用链跟踪视图。
 
 ![调用链跟踪](assets/zipkin.png)
@@ -14,15 +12,6 @@
 
 * [Dapper，大规模分布式系统的跟踪系统](https://bigbully.github.io/Dapper-translation/)
 * [Google Dapper——大规模分布式系统的基础跟踪设施](http://duanple.blog.163.com/blog/static/70971767201329113141336/)
-
-### 1.2、鹰眼（EagleEye）
-
-想必大家对 EagleEye 这个名字并不陌生。简言之 EagleEye 也是 Google Dapper 的一种实现，迄今为止被广泛应用在阿里内部的各种系统中。有关 EagleEye 的更多信息请参考：
-
-* [打造立体化监控体系的最佳实践——分布式调用跟踪和监控实践](https://yq.aliyun.com/articles/91435)
-* [2017双11技术揭秘——双十一海量数据下EagleEye的使命和挑战](https://yq.aliyun.com/articles/316952)
-* [鹰眼下的淘宝](https://www.slideshare.net/terryice/eagleeye-with-taobaojavaone)
-* [全链路稳定性背后的数字化支持：阿里巴巴鹰眼技术解密](https://myslide.cn/slides/696?vertical=1)
 
 ## 二、赛题说明
 
@@ -90,7 +79,7 @@ c0a8050115305166446471009deab6|1530516644647|0|31|00|traceName7|@a=1&
 
 #### 2.3.2、字段详解
 
-**TraceId：**在请求最初发起时，调用跟踪系统为该请求分配的 ID。此 ID 会跟随调用链传播到途径的每一个方法调用，因此 TraceId 相同的日志记录在一条调用链上。TraceId 的格式如下：
+**TraceId：**在请求最初发起时，调用跟踪系统为该请求分配的 ID。此 ID 会跟随调用链传播到途径的每一个方法调用。TraceId 的格式如下：
 
 ![TraceId 格式](assets/traceid.png)
 
@@ -138,14 +127,14 @@ c0a8050115305166446471009deab6|1530516644647|0|31|00|traceName7|@a=1&
 
 **注：以上要求满足一条即视为满足。**
 
-### 2.4.2、其他要求
+### 2.4.2、其他约束
 
 1. 日志文件大小约为 2G
-2. 限定内存为 512M（该内存为 Docker 容器占用的内存）
+2. 限定可使用的内存大小为 512M（该内存为 Docker 容器占用的内存）
 3. 可以使用的 CPU 核数为 4
 4. 需要以流的方式来处理数据，而不是批的方式
 5. 可以使用磁盘
-6. 语言和使用到的技术不限
+6. 语言和使用到的技术不受限制
 7. 提交 Docker 镜像以供评测
 
 ### 2.4.3、数据输出
@@ -153,7 +142,7 @@ c0a8050115305166446471009deab6|1530516644647|0|31|00|traceName7|@a=1&
 将所有找到的日志记录按照如下要求输出：
 
 1. 以 TraceId 分组，每组数据输出到一个文件，文件名为 TraceId
-2. 文件包含该 TraceId 对应的调用链中的所有原始日志记录（每条记录一行），并按照 RpcId 排序（如：`0 > 0.1 > 0.2 > 0.2.1 > 0.2.2 > 0.3`），如果 RpcId 相同则再按照 RpcType 排序（如：`0 > 1 > 2`）
+2. 文件内容包含该 TraceId 对应的调用链中的所有原始日志记录（每条记录一行），并按照 RpcId 排序（如：`0 > 0.1 > 0.2 > 0.2.1 > 0.2.2 > 0.3`），如果 RpcId 相同则再按照 RpcType 排序（如：`0 > 1 > 2`）
 3. 所有文件保存到容器中的 `/root/result` 目录下
 
 如：经过计算，找到的调用链内容如下：
@@ -187,7 +176,7 @@ c0a8050115305166446471011deab6|1530516644724|2|0.2.1.2|service.9.2.3|methodName9
 3. 日志记录先按照 `RpcId` 排序，再按照 `RpcType` 排序
 4. 该文件存储路径为：`/root/result/c0a8050115305166446471011deab6`
 
-**注：具体细节请参考样例代码。**
+**注：具体实现细节请参考样例代码。**
 
 ## 三、评测
 
@@ -197,9 +186,9 @@ c0a8050115305166446471011deab6|1530516644724|2|0.2.1.2|service.9.2.3|methodName9
 
 ![评测环境](assets/environment.png)
 
-蓝色的方框为 Docker 容器。左边的容器提供一个 Nginx 服务，用来从中下载日志文件，以模拟日志数据流；右边的容器是待评测的 Processor 系统。Processor 从 Nginx 中获取数据流，并将处理结果按要求输出。
+蓝色的方框为 Docker 容器。左边的容器提供一个 Nginx 服务，用来从中下载日志文件（地址固定为：http://nginx/trace.dat ），以模拟日志数据流；右边的容器是待评测的 Processor 系统。Processor 从 Nginx 中获取数据流，并将处理结果按要求输出。
 
-**注：该 Processor 系统不是一个长时间运行的服务，而只是一个处理程序，处理完结果并输出以后，要主动退出。**
+**注：该 Processor 系统不是一个长期运行的服务，而只是一个处理程序，处理完结果并输出以后，要自行退出。**
 
 ### 3.2、评测方法
 
@@ -209,7 +198,23 @@ c0a8050115305166446471011deab6|1530516644724|2|0.2.1.2|service.9.2.3|methodName9
 得分 = F1 * 10000 / 耗时
 ```
 
-#### 3.2.1、F1 Score
+有关 F1 Socre、耗时和得分的详细说明，请参考《附录三》。
+
+**注：存在一种特殊情况，程序计算得到的 F1 Score 很小但不为零，且耗时也非常少，这样也有可能得到一个非常大的最终得分，为了避免这个问题，评测程序中限定了只有 F1 Score 大于 0.5，才会统计最终结果，小于 0.5 的最终结果都为 0。**
+
+## 附录一：代码仓库
+
+* [评测脚本](http://gitlab.alibaba-inc.com/albert.tr/benchmarker4geeks)
+* [样例代码](http://gitlab.alibaba-inc.com/albert.tr/mwrace2018-geeks-demo)
+
+## 附录二：镜像仓库
+
+* Nginx (registry.cn-hangzhou.aliyuncs.com/aliware2018/nginx)
+* Processor (registry.cn-hangzhou.aliyuncs.com/aliware2018/geeks-demo)
+
+## 附录三：评分参数详解
+
+### F1 Score
 
 F1 Score 是评价分类模型性能的一种手段，根据定义：
 
@@ -239,22 +244,10 @@ Recall = TP / (TP + FN)
 | 错误 | 输出文件与目标文件相比缺失 | FN |
 | 错误 | 输出文件与目标文件相比多余 | FP |
 
-#### 3.2.2、耗时
+### 耗时
 
 耗时即 Processor 程序从启动到退出所经历的时间，单位是秒。
 
-#### 3.2.3、得分
+### 得分
 
 最终得分的含义是：F1 Score 越大、耗时越少则得分越高。
-
-**注：存在一种特殊情况，程序计算得到的 F1 Score 很小但不为零，且耗时也非常少，这样也有可能得到一个非常大的最终得分，为了避免这个问题，评测程序中限定了：只有 F1 Score 大于 0.5，才会统计最终结果，小于 0.5 的最终结果都为 0。**
-
-## 附录一：代码仓库
-
-* [评测脚本](http://gitlab.alibaba-inc.com/albert.tr/benchmarker4geeks)
-* [样例代码](http://gitlab.alibaba-inc.com/albert.tr/mwrace2018-geeks-demo)
-
-## 附录二：镜像仓库
-
-* Nginx (registry.cn-hangzhou.aliyuncs.com/aliware2018/nginx)
-* Processor (registry.cn-hangzhou.aliyuncs.com/aliware2018/geeks-demo)
