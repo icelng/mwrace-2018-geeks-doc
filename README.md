@@ -204,8 +204,8 @@ c0a8050115305166446471011deab6|1530516644724|2|0.2.1.2|service.9.2.3|methodName9
 
 ## 附录一：代码仓库
 
-* [评测脚本](http://gitlab.alibaba-inc.com/albert.tr/benchmarker4geeks)
-* [样例代码](http://gitlab.alibaba-inc.com/albert.tr/mwrace2018-geeks-demo)
+* [评测脚本](https://code.aliyun.com/middlewarerace2018/benchmarker4geeks)
+* [样例代码](https://code.aliyun.com/middlewarerace2018/mwrace2018-geeks-demo)
 
 ## 附录二：镜像仓库
 
